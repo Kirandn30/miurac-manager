@@ -5,11 +5,12 @@ import { v4 as uuidv4 } from 'uuid';
 import * as Yup from 'yup'
 import React, { useEffect, useState } from 'react'
 import { showNotification } from '@mantine/notifications';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux';
 import { ProjectDetailsType } from '../../redux/projectSlice';
+import { cloneDeep } from 'lodash';
 
 const projectSchema = Yup.object().shape({
     projectName: Yup.string().required('Project name is required'),
@@ -34,7 +35,8 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
 
     useEffect(() => {
         if (!projectDetails) return
-        form.setValues(projectDetails)
+        const data = cloneDeep(projectDetails)
+        form.setValues(data)
     }, [])
 
     const form = useForm<FormType>({
@@ -80,7 +82,9 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                 department: '',
                 contact: '',
                 id: uuidv4()
-            }]
+            }],
+            latestUpdate: [{ update: '', id: uuidv4() }],
+            remarks: [{ remark: '', id: uuidv4() }],
         },
         validate: yupResolver(projectSchema)
     });
@@ -192,6 +196,34 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
         </Group>
     ));
 
+    const latestUpdatesFields = form.values.latestUpdate.map((item, index) => (
+        <Group key={item.id} mt="xs">
+            <TextInput
+                placeholder="Updates Here"
+                withAsterisk
+                sx={{ flex: 1 }}
+                {...form.getInputProps(`latestUpdate.${index}.update`)}
+            />
+            <ActionIcon color="red" onClick={() => form.removeListItem('latestUpdate', index)}>
+                <IconTrash size="1rem" />
+            </ActionIcon>
+        </Group>
+    ));
+
+    const remarksFields = form.values.remarks.map((item, index) => (
+        <Group key={item.id} mt="xs">
+            <TextInput
+                placeholder="Remarks Here"
+                withAsterisk
+                sx={{ flex: 1 }}
+                {...form.getInputProps(`remarks.${index}.remark`)}
+            />
+            <ActionIcon color="red" onClick={() => form.removeListItem('remarks', index)}>
+                <IconTrash size="1rem" />
+            </ActionIcon>
+        </Group>
+    ));
+
     return (
         <div>
             <div className='md:p-5 md:mx-28'>
@@ -226,7 +258,8 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                                 await setDoc(doc(db, "Users", user.uid, "Projects", projectId), {
                                     ...val,
                                     projectId,
-                                    status: "New"
+                                    status: "New",
+                                    createdAt: serverTimestamp()
                                 })
                                 setOpened(prev => ({ ...prev, data: null, modal: false }))
                             } catch (error) {
@@ -485,8 +518,35 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                         {...form.getInputProps("constraints")}
                         placeholder='List the project Constraints.'
                     />
+                    <div className='my-2 space-y-3 bg-gray-100 md:p-5 p-3 rounded-md'>
+                        <Text>latest Updates</Text>
+                        {latestUpdatesFields}
+                        <Button
+                            className='self-end'
+                            variant='outline'
+                            size='xs'
+                            onClick={() =>
+                                form.insertListItem('latestUpdate', { update: '', id: uuidv4() })
+                            }
+                        >
+                            Add More
+                        </Button>
+                    </div>
+                    <div className='my-2 space-y-3 bg-gray-100 md:p-5 p-3 rounded-md'>
+                        <Text>Remarks</Text>
+                        {remarksFields}
+                        <Button
+                            className='self-end'
+                            variant='outline'
+                            size='xs'
+                            onClick={() =>
+                                form.insertListItem('remarks', { remark: '', id: uuidv4() })
+                            }
+                        >
+                            Add More
+                        </Button>
+                    </div>
                     <div
-                        // className='fixed bottom-0 z-50 max-w-sm bg-white rounded-t-md p-2 left-1/2 -translate-x-1/2'
                         className='flex justify-center'
                     >
                         <Button loading={loading} type='submit'>{projectDetails ? "Update" : "Submit"}</Button>
@@ -521,7 +581,9 @@ interface FormType {
     projectSuccessDiscription: string;
     assumptions: string;
     constraints: string;
-    humanResourceRequriments: HumanResourceRequrimentsType[]
+    humanResourceRequriments: HumanResourceRequrimentsType[],
+    latestUpdate: { update: string, id: string }[],
+    remarks: { remark: string, id: string }[],
 }
 
 interface HumanResourceRequrimentsType {

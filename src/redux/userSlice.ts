@@ -39,7 +39,7 @@ export const UserSliceReducer = UserSlice.reducer;
 
 export interface CompanyDetailsType {
     city: string
-    companyLogo: string
+    companyLogo: string | File
     country: string
     state: string
     address: string

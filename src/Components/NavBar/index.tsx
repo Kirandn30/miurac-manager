@@ -13,7 +13,7 @@ import {
     Transition,
     Footer
 } from '@mantine/core';
-import { IconChevronLeft, IconChevronRight, IconDots, IconInbox, IconNotes } from '@tabler/icons-react';
+import { IconChevronLeft, IconChevronRight, IconDots, IconInbox, IconNotes, IconSettings } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useMediaQuery } from '@mantine/hooks';
@@ -64,6 +64,7 @@ export default function NavBar({ children }: { children: ReactNode }) {
     const mockdata = [
         { icon: IconNotes, label: 'Project', link: '' },
         { icon: IconInbox, label: 'Inbox', link: 'inbox' },
+        { icon: IconSettings, label: 'Settings', link: 'settings' },
     ];
 
     function NavbarLink({ icon: Icon, label, active, onClick }: NavbarLinkProps) {
@@ -124,12 +125,12 @@ export default function NavBar({ children }: { children: ReactNode }) {
                         <div className='space-y-10'>
                             <div className='flex gap-3 my-3'>
                                 <div className='w-fit rounded-2xl overflow-clip'>
-                                    <Image
+                                    {typeof CompanyDetails?.companyLogo !== "object" && <Image
                                         src={CompanyDetails?.companyLogo}
                                         alt={CompanyDetails?.name}
                                         height={50}
                                         width={50}
-                                    />
+                                    />}
                                 </div>
                                 <Transition mounted={reduceSize} transition="scale-x" duration={200} timingFunction="ease">
                                     {(styles) => (
@@ -186,7 +187,7 @@ export default function NavBar({ children }: { children: ReactNode }) {
             header={
                 <Header
                     height={{ base: 80, md: 70 }}
-                    p="md" className='ease-linear duration-200 h-full shadow-lg'
+                    p="md" className='shadow-lg'
                     style={{ backgroundColor: matches ? 'white' : "#003152FF" }}
                 >
                     <div className='flex justify-between'>

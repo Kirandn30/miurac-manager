@@ -9,7 +9,6 @@ import { useDispatch, useSelector } from 'react-redux';
 import { setCompanyDetails, setLoading, setUser } from './redux/userSlice';
 import { RootState } from './redux';
 import { LoadingOverlay } from "@mantine/core"
-import CompanayForm from './Routes/CompanyDetails/CompanayForm';
 import { Home } from './Routes/Home/Home';
 import { doc, getDoc } from 'firebase/firestore';
 import { IconX } from '@tabler/icons-react';
@@ -20,6 +19,9 @@ import {
   InstantSearch,
   Configure
 } from 'react-instantsearch-dom';
+import { Inbox } from './Routes/Inbox/Inbox';
+import { Settings } from './Routes/Settings/Settings';
+import CompanayForm from './Routes/CompanyDetails';
 
 function App() {
   const { user, loading, CompanyDetails } = useSelector((state: RootState) => state.user)
@@ -35,7 +37,7 @@ function App() {
       try {
         dispatch(setUser(user))
         if (user) {
-          const companyDetailsres = await getDoc(doc(db, "CompanyDetails", user.uid))
+          const companyDetailsres = await getDoc(doc(db, "Users", user.uid))
           if (companyDetailsres.exists()) {
             dispatch(setCompanyDetails(companyDetailsres.data()))
             dispatch(setLoading(false))
@@ -90,7 +92,9 @@ function App() {
           <Configure hitsPerPage={10} />
         <NavBar >
           <Routes>
-            <Route path='/' element={<Home />} />
+              <Route path='/' element={<Home />} />
+              <Route path='/inbox' element={<Inbox />} />
+              <Route path='/settings' element={<Settings />} />
           </Routes>
         </NavBar>
         </InstantSearch>

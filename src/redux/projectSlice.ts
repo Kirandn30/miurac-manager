@@ -53,7 +53,9 @@ export interface ProjectDetailsType {
     clientCompany: string
     city: string
     createdAt: Timestamp
-    status: string
+    status: string,
+    latestUpdate: { update: string, id: string }[],
+    remarks: { remark: string, id: string }[],
 }
 
 export interface EstimatedBudject {

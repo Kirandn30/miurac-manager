@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Modal, Title } from "@mantine/core"
 import { ProjectForm } from './ProjectForm'
 import { TableHeader } from '../../Components/Actions';
-import { collection, onSnapshot } from 'firebase/firestore';
+import { collection, limit, onSnapshot, orderBy, query } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux';
@@ -18,7 +18,7 @@ export const Home = () => {
 
     useEffect(() => {
         if (!user) return
-        const unsubscribe = onSnapshot(collection(db, "Users", user.uid, "Projects"), (snapshot) => {
+        const unsubscribe = onSnapshot(query(collection(db, "Users", user.uid, "Projects"), orderBy("createdAt", "desc"), limit(10)), (snapshot) => {
             const projectData = snapshot.docs.map((doc => ({ ...doc.data() })))
             dispatch(setProjectDetails(projectData));
         })
@@ -29,7 +29,7 @@ export const Home = () => {
     const CustomHits = connectHits(ProjectTableData);
 
     return (
-        <div>
+        <div className='bg-white rounded-xl overflow-clip m-5 shadow-md'>
             <Modal
                 opened={opened.modal}
                 onClose={() => setOpened({ data: null, modal: false })}
