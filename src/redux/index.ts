@@ -2,11 +2,13 @@ import { configureStore } from '@reduxjs/toolkit';
 import { useDispatch } from 'react-redux';
 import { UserSliceReducer } from './userSlice';
 import { ProjectDetailsSliceReduser } from './projectSlice';
+import { SearchSliceReduser } from './searchSlice';
 
 const store = configureStore({
     reducer: {
         user: UserSliceReducer,
-        projectdetails: ProjectDetailsSliceReduser
+        projectdetails: ProjectDetailsSliceReduser,
+        Search:SearchSliceReduser
     },
     middleware: (getDefaultMiddleware) =>
         getDefaultMiddleware({

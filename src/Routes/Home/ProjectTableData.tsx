@@ -11,12 +11,17 @@ import { RootState } from '../../redux';
 import { IconDots, IconDownload, IconPencil, IconSquareRoundedPlus, IconTrash } from '@tabler/icons-react'
 import { v4 as uuidv4 } from 'uuid';
 
-export const ProjectTableData = ({ setOpened, hits }: {
-    setOpened: React.Dispatch<React.SetStateAction<{
-        modal: boolean;
-        data: ProjectDetailsType | null;
-    }>>
-    hits: any
+export const ProjectTableData = ({
+  setOpened,
+  hits,
+}: {
+  setOpened: React.Dispatch<
+    React.SetStateAction<{
+      modal: boolean;
+      data: ProjectDetailsType | null;
+    }>
+  >;
+  hits: any;
 }) => {
     const { ProjectsDetails } = useSelector((state: RootState) => state.projectdetails)
     const { user } = useSelector((state: RootState) => state.user)
@@ -193,10 +198,10 @@ const customStyles = {
         },
     },
     cells: {
-        style: {
-            paddingLeft: '8px', // override the cell padding for data cells
-            paddingRight: '8px',
-        },
+      style: {
+        paddingLeft: "8px", // override the cell padding for data cells
+        paddingRight: "8px",
+      },
     },
     headRow: {
         style: {

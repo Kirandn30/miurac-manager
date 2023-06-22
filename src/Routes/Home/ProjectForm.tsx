@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as Yup from 'yup'
 import React, { useEffect, useState } from 'react'
 import { showNotification } from '@mantine/notifications';
-import { doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
+import {  doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux';
@@ -259,7 +259,7 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                                     ...val,
                                     projectId,
                                     status: "New",
-                                    createdAt: serverTimestamp()
+                                    createdAt: serverTimestamp(),
                                 })
                                 setOpened(prev => ({ ...prev, data: null, modal: false }))
                             } catch (error) {
