@@ -15,10 +15,20 @@ import { doc, getDoc } from 'firebase/firestore';
 import { IconX } from '@tabler/icons-react';
 import { showNotification } from '@mantine/notifications';
 import NavBar from './Components/NavBar';
+import algoliasearch from 'algoliasearch';
+import {
+  InstantSearch,
+  Configure
+} from 'react-instantsearch-dom';
 
 function App() {
   const { user, loading, CompanyDetails } = useSelector((state: RootState) => state.user)
   const dispatch = useDispatch()
+
+  const searchClient = algoliasearch(
+    'WKD4SQHUQD',
+    '3cc44358d94f7bc7b3842972876d1751'
+  );
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -73,11 +83,17 @@ function App() {
   } else if (user && CompanyDetails) {
     return (
       <div>
+        <InstantSearch
+          searchClient={searchClient}
+          indexName="projects"
+        >
+          <Configure hitsPerPage={10} />
         <NavBar >
           <Routes>
             <Route path='/' element={<Home />} />
           </Routes>
         </NavBar>
+        </InstantSearch>
       </div>
     )
   } else {

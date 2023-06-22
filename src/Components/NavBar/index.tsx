@@ -9,15 +9,18 @@ import {
     Tooltip,
     UnstyledButton,
     ActionIcon,
-    Image
+    Image,
+    Transition,
+    Footer
 } from '@mantine/core';
-import { IconChevronLeft, IconChevronRight, IconInbox, IconNotes } from '@tabler/icons-react';
+import { IconChevronLeft, IconChevronRight, IconDots, IconInbox, IconNotes } from '@tabler/icons-react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { useMediaQuery } from '@mantine/hooks';
 import { signOut } from 'firebase/auth';
 import { RootState } from '../../redux';
 import { auth } from '../../firebaseConfig';
+import { IconBell } from '@tabler/icons-react';
 
 export default function NavBar({ children }: { children: ReactNode }) {
     const matches = useMediaQuery('(min-width: 767px)');
@@ -36,23 +39,23 @@ export default function NavBar({ children }: { children: ReactNode }) {
 
     const useStyles = createStyles((theme) => ({
         link: {
-            width: reduceSize ? 245 : 50,
-            transitionDuration: "100ms",
+            width: reduceSize ? 200 : 50,
+            transitionDuration: "200ms",
             transitionTimingFunction: "linear",
             height: 50,
             borderRadius: theme.radius.md,
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            color: theme.colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.yellow[0],
+            color: theme.colorScheme === 'dark' ? theme.colors.dark[0] : theme.colors.gray[7],
             '&:hover': {
-                backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[5] : theme.colors.gray[9],
+                backgroundColor: theme.colorScheme === 'dark' ? theme.colors.dark[5] : "#ffffff30",
             },
         },
 
         active: {
             '&, &:hover': {
-                backgroundColor: theme.fn.variant({ variant: 'light', color: theme.primaryColor }).background,
+                backgroundColor: theme.fn.variant({ variant: 'dark', color: theme.primaryColor }).background,
                 color: theme.fn.variant({ variant: 'light', color: theme.primaryColor }).color,
             },
         },
@@ -67,8 +70,12 @@ export default function NavBar({ children }: { children: ReactNode }) {
         const { classes, cx } = useStyles();
         return (
             <Tooltip label={label} position="right" disabled={reduceSize}>
-                <UnstyledButton onClick={onClick} className={cx(classes.link, { [classes.active]: active })}>
-                    <div className={reduceSize ? 'w-full grid grid-cols-3 gap-3' : ""}>
+                <UnstyledButton onClick={onClick} className={cx(classes.link, { [classes.active]: active })}
+                    style={{
+                        width: reduceSize ? 200 : 50,
+                        transition: 'width 2s linear',
+                    }}>
+                    <div className={reduceSize ? 'w-full grid grid-cols-3 gap-3' : ""} >
                         <Icon className='justify-self-center text-white' stroke={1.5} />
                         {reduceSize && <Text style={{ color: "white" }} size={15} className='col-span-2'>{label}</Text>}
                     </div>
@@ -96,6 +103,7 @@ export default function NavBar({ children }: { children: ReactNode }) {
 
     return (
         <AppShell
+            padding={0}
             layout='alt'
             styles={{
                 main: {
@@ -106,11 +114,11 @@ export default function NavBar({ children }: { children: ReactNode }) {
             navbar={
                 <div className='h-full'>
                     <Navbar
-                        className='ease-linear duration-200 h-full'
+                        // className='ease-linear duration-200 h-full'
                         p="xs"
                         hiddenBreakpoint="sm"
                         hidden={!opened}
-                        width={{ sm: reduceSize ? 280 : 85 }}
+                        width={{ sm: reduceSize ? 230 : 85 }}
                         style={{ backgroundColor: "#003152FF" }}
                     >
                         <div className='space-y-10'>
@@ -123,10 +131,14 @@ export default function NavBar({ children }: { children: ReactNode }) {
                                         width={50}
                                     />
                                 </div>
-                                {reduceSize && <div className='text-white'>
-                                    <Text size={20} className='text-center font-bold'>{CompanyDetails?.name}</Text>
-                                    <Text size={10} className='text-right' style={{ color: '#EF9834FF' }}>Dashboard</Text>
-                                </div>}
+                                <Transition mounted={reduceSize} transition="scale-x" duration={200} timingFunction="ease">
+                                    {(styles) => (
+                                        <div style={styles} className='text-white'>
+                                            <Text size={20} className='text-center font-bold'>{CompanyDetails?.name}</Text>
+                                            <Text size={10} className='text-right' style={{ color: '#EF9834FF' }}>Dashboard</Text>
+                                        </div>
+                                    )}
+                                </Transition>
                             </div>
                             <div className='space-y-1'>
                                 {links}
@@ -147,19 +159,49 @@ export default function NavBar({ children }: { children: ReactNode }) {
             //         </Aside>
             //     </MediaQuery>
             // }
-            // footer={
-            //     <Footer height={60} p="md">
-            //         Application footer
-            //     </Footer>
-            // }
-            header={
-                <Header height={{ base: 80, md: 70 }} p="md" className='shadow-lg'>
-                    <div className='w-fit'>
-                        <div className='flex gap-x-1'>
-                            <Text style={{ color: '#003152FF' }}>Project</Text>
-                            <Text style={{ color: '#EF9834FF' }}>Management</Text>
+            footer={
+                <Footer height={70} p="md" hidden={matches}>
+                    <div className='grid grid-cols-3 justify-items-center'>
+                        <div className='grid'>
+                            <ActionIcon className='justify-self-center'>
+                                <IconNotes size={30} />
+                            </ActionIcon>
+                            <Text size="xs">Projects</Text>
                         </div>
-                        <Text align='right' size="xs" color='#003152FF'>Powered by Miurac</Text>
+                        <div>
+                            <ActionIcon>
+                                <IconInbox size={30} />
+                            </ActionIcon>
+                            <Text size="xs">Inbox</Text>
+                        </div>
+                        <div>
+                            <ActionIcon>
+                                <IconDots size={30} />
+                            </ActionIcon>
+                            <Text size="xs">More</Text>
+                        </div>
+                    </div>
+                </Footer>
+            }
+            header={
+                <Header
+                    height={{ base: 80, md: 70 }}
+                    p="md" className='ease-linear duration-200 h-full shadow-lg'
+                    style={{ backgroundColor: matches ? 'white' : "#003152FF" }}
+                >
+                    <div className='flex justify-between'>
+                        <div className='w-fit'>
+                            <div className='flex gap-x-1'>
+                                <Text className='font-bold' style={{ color: matches ? '#003152FF' : "white" }}>Project</Text>
+                                <Text className='font-bold' style={{ color: '#EF9834FF' }}>Management</Text>
+                            </div>
+                            <Text align='right' size="xs" color={matches ? '#003152FF' : "white"}>Powered by Miurac</Text>
+                        </div>
+                        <div className='self-center'>
+                            <ActionIcon>
+                                <IconBell color={matches ? '#003152FF' : "white"} />
+                            </ActionIcon>
+                        </div>
                     </div>
                 </Header>
             }

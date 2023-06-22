@@ -1,113 +1,181 @@
-import { ActionIcon, Button, Select, TextInput } from '@mantine/core';
-import { IconCirclePlus, IconSearch, IconX } from '@tabler/icons-react';
-import { debounce } from 'lodash';
-import React, { useRef, useEffect } from 'react'
-import { EventsFilter } from './EventFilter';
+import React, { useEffect, useRef, useState } from 'react'
+import { Button, ActionIcon, TextInput, Transition } from "@mantine/core"
+import { IconArrowNarrowUp, IconX } from '@tabler/icons-react'
+import { IconSearch } from '@tabler/icons-react'
+import { IconFilter } from '@tabler/icons-react'
+import { IconPlus } from '@tabler/icons-react'
+import { debounce } from 'lodash'
+import { useMediaQuery } from '@mantine/hooks'
+import { ProjectDetailsType } from '../../redux/projectSlice'
+import {
+    connectSearchBox,
+} from 'react-instantsearch-dom';
 
-export const Actions = ({ setEventModal, setGroundModal, searchData, setFilterValue, setfilterBy, filterBy, filterValue, filterData, setFilterQueries }: {
-    setEventModal?: React.Dispatch<React.SetStateAction<{
+export const TableHeader = ({ setOpened }: {
+    setOpened: React.Dispatch<React.SetStateAction<{
         modal: boolean;
-        data: null | any;
+        data: ProjectDetailsType | null;
     }>>
-    setGroundModal?: React.Dispatch<React.SetStateAction<{
-        modal: boolean;
-        data: null | any;
-    }>>
-
-    searchData: {
-        label: string,
-        value: string,
-    }[]
-    setfilterBy: React.Dispatch<React.SetStateAction<string | null>>
-    setFilterValue: React.Dispatch<React.SetStateAction<string | null>>
-    filterBy: string | null
-    filterValue: string | null
-    filterData: {
-        data1: {
-            label: string | boolean;
-            value: string | boolean;
-        }[];
-        data2?: {
-            value: string;
-            label: string;
-            type: string;
-        }[];
-    }
-    setFilterQueries: React.Dispatch<React.SetStateAction<{
-        filter: string | null;
-        filter2: string[];
-    }>>
-
-
-
 }) => {
-    const textRef = useRef<any>();
+    const [shouldFetchHits, setShouldFetchHits] = useState(false);
+    const [searchActive, setsearchActive] = useState({ active: false, text: "" })
+    const matches = useMediaQuery('(min-width: 767px)');
 
-    const changed = debounce((text) => {
-        setFilterValue(text);
-    }, 800);
+    const CustomSearchBox = connectSearchBox(SearchBox);
 
-    useEffect(() => {
-        setfilterBy(searchData[0].value)
-    }, [])
-
+    const handleSearch = (value: string) => {
+        console.log(value);
+    }
 
     return (
-        <div className="grid md:grid-cols-4 grid-cols-2 justify-center gap-3 my-5 bg-[#f0eeee] p-5 rounded-xl">
-            <div className="col-span-2 grid grid-cols-3 gap-x-3">
-                <Select
-                    defaultValue={filterBy}
-                    placeholder="Select"
-                    data={searchData}
-                    onChange={(e) => { e && setfilterBy(e) }}
-                    value={filterBy}
-                />
-                <TextInput
-                    onChange={(e) => changed(e.target.value.toLowerCase())}
-                    className="col-span-2"
-                    icon={<IconSearch size={20} color="gray" className="min-h-full" />}
-                    placeholder="Search here.."
-                    ref={textRef}
-                    rightSection={
-                        filterValue && (
-                            <ActionIcon
-                                size="sm"
-                                variant='outline'
-                                onClick={() => {
-                                    if (textRef.current) {
-                                        textRef.current.value = '';
-                                        setFilterValue(null)
-                                    }
-                                }}
-                            >
-                                <IconX />
-                            </ActionIcon>
-                        )
-                    }
-                />
-            </div>
-            <EventsFilter
-                filterData={filterData}
-                setFilterQueries={setFilterQueries}
-            />
-            {["events", "grounds"].includes(window.location.pathname.split("/")[1]) ? <Button
-                variant='gradient'
-                onClick={() => {
-                    if (window.location.pathname.split("/")[1] === "events") {
-                        setEventModal && setEventModal({ data: null, modal: true })
-                    } else if (window.location.pathname.split("/")[1] === "grounds") {
-                        setGroundModal && setGroundModal({ data: null, modal: true })
-                    }
-                }}
-            >
-                <IconCirclePlus />
-                <span className='hidden lg:block'>&nbsp; Create</span>
-                <span className=""> &nbsp; {capitalizeFirstLetter(window.location.pathname.split("/")[1])}</span>
-            </Button> : <div></div>}
+        <div className='bg-white px-3 py-5 space-y-3'>
+            {
+                !matches ? (
+                    <div>
+                        <Transition mounted={searchActive.active} transition="fade" duration={400} timingFunction="ease">
+                            {(styles) => (
+                                <div style={styles} className='flex gap-3'>
+                                    <CustomSearchBox />
+                                    <Button variant='outline' onClick={() => setsearchActive({ active: false, text: "" })}>Close</Button>
+                                </div>
+                            )}
+                        </Transition>
+                        <Transition mounted={!searchActive.active} transition="pop" duration={400} exitDuration={0} timingFunction="ease">
+                            {(styles) => (
+                                <div style={styles} className='grid grid-cols-2'>
+                                    <div className='self-center'>
+                                        <Button
+                                            leftIcon={<IconArrowNarrowUp />}
+                                            variant='outline'
+                                        >
+                                            Export
+                                        </Button>
+                                    </div >
+                                    <div className='flex justify-end gap-3'>
+                                        <ActionIcon onClick={() => setsearchActive({ active: true, text: "" })} style={{ borderRadius: "100%", padding: "3px", border: "solid 1px #e6e6e6" }} size="xl" variant='light'>
+                                            <IconSearch />
+                                        </ActionIcon>
+                                        <ActionIcon style={{ borderRadius: "100%", padding: "3px", border: "solid 1px #e6e6e6" }} size="xl" variant='light'>
+                                            <IconFilter />
+                                        </ActionIcon>
+                                        <ActionIcon style={{ borderRadius: "100%", padding: "3px", backgroundColor: "#003152FF" }} size="xl" variant='filled'>
+                                            <IconPlus />
+                                        </ActionIcon>
+                                    </div>
+                                </div >
+                            )}
+                        </Transition>
+                    </div>
+
+                ) : (
+                    <div className='flex justify-end gap-5'>
+                        {/* <Button
+                            leftIcon={<IconArrowNarrowUp />}
+                            variant='outline'
+                        >
+                            Export
+                        </Button> */}
+                        <div className="flex-grow grid justify-end">
+                            <CustomSearchBox />
+                        </div>
+                        <Button
+                            leftIcon={<IconFilter />}
+                            variant='subtle'
+                        >
+                            Filter
+                        </Button>
+                        <Button
+                            leftIcon={<IconPlus />}
+                            onClick={() => setOpened(op => ({ ...op, data: null, modal: true }))}
+                        >
+                            Create Project
+                        </Button>
+                    </div>
+                )
+            }
         </div>
     )
 }
 
-function capitalizeFirstLetter(word: string) {
-    return word.charAt(0).toUpperCase() + word.slice(1);
+interface SearchBoxProps {
+    currentRefinement: string;
+    refine: (value: string) => void;
+    // setShouldFetchHits: React.Dispatch<React.SetStateAction<boolean>>
 }
+
+const SearchBox = ({ currentRefinement, refine }: SearchBoxProps) => {
+
+    return (
+        <TextInput
+            onChange={(event) => {
+                const word = event.target.value
+                refine(word)
+                console.log(word);
+
+            }}
+            icon={<IconSearch size={20} color="gray" className="min-h-full" />}
+            placeholder="Search here.."
+            className='max-w-sm'
+            value={currentRefinement}
+        // ref={textRef}
+        // rightSection={
+        //     searchActive.text && (
+        //         <ActionIcon
+        //             size="sm"
+        //             variant='outline'
+        //             onClick={() => {
+        //                 if (textRef.current) {
+        //                     textRef.current.value = '';
+        //                     setsearchActive(prev => ({ ...prev, text: "" }));
+        //                 }
+        //             }}
+        //         >
+        //             <IconX />
+        //         </ActionIcon>
+        //     )
+        // }
+        />
+    )
+}
+
+
+// const SearchBox = ({ currentRefinement, refine }) => (
+//     <input
+//         type="text"
+//         value={currentRefinement}
+//         onChange={(event) => refine(event.currentTarget.value)}
+//     />
+// );
+
+// const Hits = ({ hits }) => (
+//     <ul>
+//         {hits.map((hit) => (
+//             <li key={hit.objectID}>{hit.title}</li>
+//         ))}
+//     </ul>
+// );
+
+// const CustomSearchBox = connectSearchBox(SearchBox);
+// const CustomHits = connectHits(Hits);
+
+// const App = () => {
+//     const [shouldFetchHits, setShouldFetchHits] = useState(false);
+
+//     const handleSearch = (query) => {
+//         // Perform search or update the state to enable fetching hits
+//         setShouldFetchHits(true);
+//     };
+
+//     return (
+//         <InstantSearch
+//             appId="YOUR_ALGOLIA_APP_ID"
+//             apiKey="YOUR_ALGOLIA_API_KEY"
+//             indexName="your_index_name"
+//         >
+//             <CustomSearchBox currentRefinement="" refine={handleSearch} />
+//             {shouldFetchHits && <CustomHits initiallyRenderedHits={[]} />}
+//         </InstantSearch>
+//     );
+// };
+
+// export default App;

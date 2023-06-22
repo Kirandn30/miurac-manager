@@ -1,36 +1,35 @@
 import React, { useEffect, useState } from 'react'
-import { Button, Modal, Title } from "@mantine/core"
+import { Modal, Title } from "@mantine/core"
 import { ProjectForm } from './ProjectForm'
-import { Actions } from '../../Components/Actions';
+import { TableHeader } from '../../Components/Actions';
 import { collection, onSnapshot } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux';
 import { ProjectTableData } from './ProjectTableData';
 import { ProjectDetailsType, setProjectDetails } from '../../redux/projectSlice';
+import { connectHits } from "react-instantsearch-dom"
 
 export const Home = () => {
     const [opened, setOpened] = useState<{ modal: boolean, data: ProjectDetailsType | null }>({ modal: false, data: null })
-    const [filterValue, setFilterValue] = useState<string | null>(null)
-    const [filterBy, setfilterBy] = useState<string | null>(null)
-    const [filteredData, setFilteredData] = useState<any[] | null>(null)
-    const [filterQuries, setFilterQueries] = useState<{ filter: string | null, filter2: string[] }>({ filter: null, filter2: [] })
     const { user } = useSelector((state: RootState) => state.user)
     const dispatch = useDispatch()
 
+
     useEffect(() => {
         if (!user) return
-        const unsubscribe = onSnapshot(collection(db, "Users", user.uid, "Projects"), async (snapshot) => {
-            const projectData = await snapshot.docs.map((doc => ({ ...doc.data() })))
+        const unsubscribe = onSnapshot(collection(db, "Users", user.uid, "Projects"), (snapshot) => {
+            const projectData = snapshot.docs.map((doc => ({ ...doc.data() })))
             dispatch(setProjectDetails(projectData));
         })
         return () => unsubscribe()
     }, [])
 
 
+    const CustomHits = connectHits(ProjectTableData);
+
     return (
-        <div className='float-right'>
-            <Button variant='filled' onClick={() => setOpened(op => ({ ...op, data: null, modal: true }))}>Create Charter</Button>
+        <div>
             <Modal
                 opened={opened.modal}
                 onClose={() => setOpened({ data: null, modal: false })}
@@ -40,19 +39,11 @@ export const Home = () => {
                 centered
                 fullScreen
             >
-                <ProjectForm projectDetails={opened.data} />
+                <ProjectForm projectDetails={opened.data} setOpened={setOpened} />
             </Modal>
-            <div className='p-3'>
-                <Actions
-                    searchData={searchData}
-                    setFilterValue={setFilterValue}
-                    setfilterBy={setfilterBy}
-                    filterBy={filterBy}
-                    filterValue={filterValue}
-                    filterData={filterData}
-                    setFilterQueries={setFilterQueries}
-                />
-                <ProjectTableData setOpened={setOpened} />
+            <div className='md:p-3'>
+                <TableHeader setOpened={setOpened} />
+                <CustomHits setOpened={setOpened} />
             </div>
         </div>
     )

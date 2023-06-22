@@ -22,37 +22,44 @@ root.render(
     <MantineProvider
       emotionCache={myCache}
       theme={{
-        colors: {
-          // Add your color
-          primary: [
-            '#002137FF',
-            '#002137FF',
-            '#002137FF',
-            '#002137FF',
-            '#002137FF',
-            '#002137FF',
-            '#002137FF',
-            '#002137FF',
-            '#002137FF',
-            '#002137FF',
-          ],
-          secondary: [
-            '#d7ffff',
-            '#aaf8ff',
-            '#7bf3ff',
-            '#49ecfe',
-            '#1ce7fd',
-            '#02cde3',
-            '#02CBE1',
-            '#00737f',
-            '#00454e',
-            '#00191d',
-          ],
-        },
+        // colors: {
+        //   // Add your color
+        //   primary: [
+        //     '#002137FF',
+        //     '#002137FF',
+        //     '#002137FF',
+        //     '#002137FF',
+        //     '#002137FF',
+        //     '#002137FF',
+        //     '#002137FF',
+        //     '#002137FF',
+        //     '#002137FF',
+        //     '#002137FF',
+        //   ],
+        //   secondary: [
+        //     '#d7ffff',
+        //     '#aaf8ff',
+        //     '#7bf3ff',
+        //     '#49ecfe',
+        //     '#1ce7fd',
+        //     '#02cde3',
+        //     '#02CBE1',
+        //     '#00737f',
+        //     '#00454e',
+        //     '#00191d',
+        //   ],
+        // },
 
-        primaryColor: 'primary',
-        fontFamily: 'Poppins',
-        defaultRadius: 8,
+        // // primaryColor: 'primary',
+        // fontFamily: 'Poppins',
+        // defaultRadius: 8,
+        components: {
+          Modal: {
+            defaultProps: {
+              transitionProps: { transition: "slide-down", duration: 600 }
+            }
+          }
+        }
       }}
     >
       <Notifications />

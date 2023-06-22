@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as Yup from 'yup'
 import React, { useEffect, useState } from 'react'
 import { showNotification } from '@mantine/notifications';
-import { doc, setDoc } from 'firebase/firestore';
+import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux';
@@ -21,8 +21,13 @@ const projectSchema = Yup.object().shape({
     appStructure: Yup.array().min(1, 'At least one app structure item is required'),
 });
 
-export const ProjectForm = ({ projectDetails }: {
+export const ProjectForm = ({ projectDetails, setOpened }: {
     projectDetails: ProjectDetailsType | null
+    setOpened: React.Dispatch<React.SetStateAction<{
+        modal: boolean;
+        data: ProjectDetailsType | null;
+    }>>
+
 }) => {
     const [loading, setLoading] = useState(false)
     const { user } = useSelector((state: RootState) => state.user)
@@ -36,6 +41,7 @@ export const ProjectForm = ({ projectDetails }: {
         initialValues: {
             projectName: "",
             clientCompany: "",
+            clientName: "",
             clientPhone: "",
             clientEmail: "",
             address: "",
@@ -44,7 +50,7 @@ export const ProjectForm = ({ projectDetails }: {
             country: "",
             zipCode: "",
             appStructure: [],
-            projectDiscription: '',
+            projectDescription: '',
             deliverables: [{ deliverable: '', id: uuidv4() }],
             assumptions: '',
             businessObjectives: '',
@@ -191,29 +197,51 @@ export const ProjectForm = ({ projectDetails }: {
             <div className='md:p-5 md:mx-28'>
                 <form
                     onSubmit={form.onSubmit(async (val) => {
-                        try {
-                            console.log("run", val);
-
-                            if (!user) return
-                            console.log("run2");
-                            setLoading(true)
-                            const projectId = uuidv4()
-                            await setDoc(doc(db, "Users", user.uid, "Projects", projectId), {
-                                ...val,
-                                projectId
-                            })
-                        } catch (error) {
-                            showNotification({
-                                id: `reg-err-${Math.random()}`,
-                                autoClose: 5000,
-                                title: 'Error!',
-                                message: "Error saving details try again",
-                                color: 'red',
-                                icon: <IconX />,
-                                loading: false,
-                            });
-                        } finally {
-                            setLoading(false)
+                        if (projectDetails) {
+                            try {
+                                if (!user) return
+                                setLoading(true)
+                                await updateDoc(doc(db, "Users", user.uid, "Projects", projectDetails.projectId), {
+                                    ...val,
+                                })
+                                setOpened(prev => ({ ...prev, data: null, modal: false }))
+                            } catch (error) {
+                                showNotification({
+                                    id: `reg-err-${Math.random()}`,
+                                    autoClose: 5000,
+                                    title: 'Error!',
+                                    message: "Error saving details try again",
+                                    color: 'red',
+                                    icon: <IconX />,
+                                    loading: false,
+                                });
+                            } finally {
+                                setLoading(false)
+                            }
+                        } else {
+                            try {
+                                if (!user) return
+                                setLoading(true)
+                                const projectId = uuidv4()
+                                await setDoc(doc(db, "Users", user.uid, "Projects", projectId), {
+                                    ...val,
+                                    projectId,
+                                    status: "New"
+                                })
+                                setOpened(prev => ({ ...prev, data: null, modal: false }))
+                            } catch (error) {
+                                showNotification({
+                                    id: `reg-err-${Math.random()}`,
+                                    autoClose: 5000,
+                                    title: 'Error!',
+                                    message: "Error saving details try again",
+                                    color: 'red',
+                                    icon: <IconX />,
+                                    loading: false,
+                                });
+                            } finally {
+                                setLoading(false)
+                            }
                         }
                     })}
                 >
@@ -233,6 +261,14 @@ export const ProjectForm = ({ projectDetails }: {
                                 name="Client Company"
                                 {...form.getInputProps("clientCompany")}
                                 placeholder='Client Company'
+                                withAsterisk
+                            />
+                            <TextInput
+                                className='my-2'
+                                label="Client Name"
+                                name="Client Name"
+                                {...form.getInputProps("clientName")}
+                                placeholder='Client Name'
                                 withAsterisk
                             />
                             <TextInput
@@ -308,7 +344,7 @@ export const ProjectForm = ({ projectDetails }: {
                         className='my-2'
                         label="Describe the project"
                         name="Describe the project"
-                        {...form.getInputProps("projectDiscription")}
+                        {...form.getInputProps("projectDescription")}
                         placeholder='The project is a meat app that aims to transform the meat industry by providing a user-friendly digital platform for consumers to conveniently access high-quality, ethically sourced meat products. With a focus on transparency, sustainability, and exceptional customer experience, the app aims to revolutionize the way people engage with meat purchasing. It will offer detailed information about product origins and production methods, foster collaborations with local farmers and suppliers, promote sustainable practices, and deliver personalized recommendations and exceptional customer service. Ultimately, the project seeks to establish itself as the go-to destination for individuals seeking convenient, trustworthy, and environmentally conscious meat options.'
                     />
                     <Textarea
@@ -453,7 +489,7 @@ export const ProjectForm = ({ projectDetails }: {
                         // className='fixed bottom-0 z-50 max-w-sm bg-white rounded-t-md p-2 left-1/2 -translate-x-1/2'
                         className='flex justify-center'
                     >
-                        <Button loading={loading} type='submit'>Submit</Button>
+                        <Button loading={loading} type='submit'>{projectDetails ? "Update" : "Submit"}</Button>
                     </div>
                 </form>
             </div>
@@ -464,6 +500,7 @@ export const ProjectForm = ({ projectDetails }: {
 interface FormType {
     projectName: string;
     clientCompany: string;
+    clientName: string;
     clientPhone: string;
     clientEmail: string;
     address: string;
@@ -473,7 +510,7 @@ interface FormType {
     zipCode: string;
     appStructure: string[];
     deliverables: { deliverable: string, id: string }[];
-    projectDiscription: string;
+    projectDescription: string;
     businessObjectives: string;
     businessScope: string;
     estimatedSchedule: EstimatedScheduleType[];

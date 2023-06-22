@@ -1,47 +1,50 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
-import { RootState } from '../../redux'
 import DataTable from 'react-data-table-component'
 import { Text, Badge, Button } from "@mantine/core"
 import spacetime from 'spacetime'
 import { ProjectDetailsType } from '../../redux/projectSlice'
+import { HitsProvided } from "react-instantsearch-dom"
+import { collection, onSnapshot } from 'firebase/firestore';
+import { db } from '../../firebaseConfig';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../../redux';
 
-export const ProjectTableData = ({ setOpened }: {
+export const ProjectTableData = ({ setOpened, hits }: {
     setOpened: React.Dispatch<React.SetStateAction<{
         modal: boolean;
         data: ProjectDetailsType | null;
     }>>
-
+    hits: any
 }) => {
     const { ProjectsDetails } = useSelector((state: RootState) => state.projectdetails)
-    const { CompanyDetails } = useSelector((state: RootState) => state.user)
-    console.log(ProjectsDetails);
 
     const columns = [
         {
-            name: 'Project Name',
+            name: 'Filed on',
             cell: (row: ProjectDetailsType) => {
+                console.log();
+
                 return (
-                    <Text className='text-xs font-medium'>{row.projectName}</Text>
+                    <Text className='text-xs font-medium'>{spacetime(row.createdAt?.toDate()).format("nice").replace(",", " -")}</Text>
                 )
             }
         },
         {
-            name: 'Company Name',
+            name: 'Client Name',
             cell: (row: ProjectDetailsType) => {
                 return (
                     <Text className='text-xs'>
-                        {row.clientCompany}
+                        {row.clientName}
                     </Text>
                 )
             }
         },
         {
-            name: 'Client Email',
+            name: 'Company',
             cell: (row: ProjectDetailsType) => {
                 return (
                     <Text className='text-xs'>
-                        {row.clientEmail}
+                        {row.clientCompany}
                     </Text>
                 )
             }
@@ -61,7 +64,8 @@ export const ProjectTableData = ({ setOpened }: {
             cell: (row: ProjectDetailsType) => {
                 return (
                     <Text className='text-xs'>
-                        {spacetime(row.createdAt.seconds * 1000).format("nice").replace(",", " -")}
+                        {/* {spacetime(row.createdAt.toDate().toString()).format("nice").replace(",", " -")} */}
+                        dfgl
                     </Text>
                 )
             }
@@ -117,7 +121,8 @@ const customStyles = {
             paddingLeft: '8px', // override the cell padding for head cells
             paddingRight: '8px',
             fontWeight: 900,
-            fontSize: "14px"
+            fontSize: "14px",
+            backgroundColor: "#e6e6e6"
         },
     },
     cells: {

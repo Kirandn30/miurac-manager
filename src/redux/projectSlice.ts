@@ -32,6 +32,7 @@ export interface ProjectDetailsType {
     procurements: Procurement[]
     humanResourceRequriments: HumanResourceRequriment[]
     clientPhone: string
+    clientName: string
     risks: string
     country: string
     state: string
@@ -52,6 +53,7 @@ export interface ProjectDetailsType {
     clientCompany: string
     city: string
     createdAt: Timestamp
+    status: string
 }
 
 export interface EstimatedBudject {
