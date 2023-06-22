@@ -10,6 +10,8 @@ import { ProjectDetailsType } from '../../redux/projectSlice'
 import {
     connectSearchBox,
 } from 'react-instantsearch-dom';
+import { useDispatch } from 'react-redux'
+import { setShouldFetchHits } from '../../redux/searchSlice'
 
 export const TableHeader = ({ setOpened }: {
     setOpened: React.Dispatch<React.SetStateAction<{
@@ -17,15 +19,15 @@ export const TableHeader = ({ setOpened }: {
         data: ProjectDetailsType | null;
     }>>
 }) => {
-    const [shouldFetchHits, setShouldFetchHits] = useState(false);
+    // const [shouldFetchHits, setShouldFetchHits] = useState(false);
     const [searchActive, setsearchActive] = useState({ active: false, text: "" })
     const matches = useMediaQuery('(min-width: 767px)');
 
     const CustomSearchBox = connectSearchBox(SearchBox);
 
-    const handleSearch = (value: string) => {
-        console.log(value);
-    }
+    // const handleSearch = (value: string) => {
+    //     console.log(value);
+    // }
 
     return (
         <div className='bg-white px-3 py-5 space-y-3'>
@@ -104,15 +106,18 @@ interface SearchBoxProps {
 }
 
 const SearchBox = ({ currentRefinement, refine }: SearchBoxProps) => {
-
+    const dispatch = useDispatch()
     return (
         <TextInput
-            onChange={(event) => {
+            onChange={async(event) => {
                 const word = event.target.value
                 refine(word)
+                if(word) dispatch(setShouldFetchHits(true))
+                else dispatch(setShouldFetchHits(false))
                 console.log(word);
-
+                event.currentTarget.focus()
             }}
+            autoFocus
             icon={<IconSearch size={20} color="gray" className="min-h-full" />}
             placeholder="Search here.."
             className='max-w-sm'

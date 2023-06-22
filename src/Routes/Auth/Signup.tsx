@@ -46,7 +46,7 @@ export const Signup = () => {
                 setLoading(false)
             }
         })}>
-            <div className='min-h-screen grid grid-rows-2 md:grid-cols-2'>
+            <div className='min-h-screen grid  md:grid-cols-2'>
                 <div
                     className='h-full'
                     style={{

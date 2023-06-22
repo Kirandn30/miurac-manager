@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import * as Yup from 'yup'
 import React, { useEffect, useState } from 'react'
 import { showNotification } from '@mantine/notifications';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
+import { collection, doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../redux';
@@ -223,9 +223,11 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                                 if (!user) return
                                 setLoading(true)
                                 const projectId = uuidv4()
+                                const docRef = collection(db,'users')
                                 await setDoc(doc(db, "Users", user.uid, "Projects", projectId), {
                                     ...val,
                                     projectId,
+                                    createdAt:serverTimestamp(),
                                     status: "New"
                                 })
                                 setOpened(prev => ({ ...prev, data: null, modal: false }))
