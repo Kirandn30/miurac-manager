@@ -17,6 +17,10 @@ import NavBar from "./Components/NavBar";
 import algoliasearch from "algoliasearch";
 import { InstantSearch, Configure } from "react-instantsearch-dom";
 import CompanayForm from "./Routes/CompanyDetails";
+import { Settings } from "./Routes/Settings/Settings";
+import { Inbox } from "./Routes/Inbox/Inbox";
+import { NothingFoundBackground } from "./Components/NotFound/NotFound";
+import { ForgotPassword } from "./Routes/Auth/ForgotPassword";
 
 function App() {
   const { user, loading, CompanyDetails } = useSelector(
@@ -66,6 +70,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Signup />} />
           <Route path="/signin" element={<Signin />} />
+          <Route path="/passwordreset" element={<ForgotPassword />} />
         </Routes>
       </div>
     );
@@ -88,6 +93,18 @@ function App() {
                   <Home />
                 </InstantSearch>
               }
+            />
+            <Route
+              path="/settings"
+              element={<Settings />}
+            />
+            <Route
+              path="/inbox"
+              element={<Inbox />}
+            />
+            <Route
+              path="*"
+              element={<NothingFoundBackground />}
             />
           </Routes>
         </NavBar>

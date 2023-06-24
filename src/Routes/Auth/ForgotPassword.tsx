@@ -1,52 +1,62 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState } from 'react'
 import image from '../../assets/page1.png'
 import { Divider, Title, TextInput, PasswordInput, Button, Text } from '@mantine/core'
 import { useNavigate } from "react-router-dom"
 import { useForm } from '@mantine/form'
-import { signInWithEmailAndPassword } from 'firebase/auth'
+import { sendPasswordResetEmail } from 'firebase/auth'
 import { auth } from '../../firebaseConfig'
-import { showNotification } from '@mantine/notifications';
-import { IconX } from '@tabler/icons-react'
-import { GoogleButton } from './GoogleIcon'
-import { useSelector } from 'react-redux'
-import { RootState } from '../../redux'
+import { showNotification } from '@mantine/notifications'
+import { IconCheck, IconX } from '@tabler/icons-react'
 
-export const Signin = () => {
+export const ForgotPassword = () => {
     const [loading, setLoading] = useState(false)
     const navigate = useNavigate()
-    const { user } = useSelector((state: RootState) => state.user)
 
     const form = useForm({
         initialValues: {
             email: '',
-            password: '',
         },
 
         validate: {
             email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-            password: (value) => value.length >= 6 ? null : 'Password must contain 6 characters at least',
         },
     });
-
-    useEffect(() => {
-        if (user) {
-            navigate("/")
-        }
-    }, [navigate, user])
 
     return (
         <form onSubmit={form.onSubmit(async (values) => {
             try {
                 setLoading(true)
-                await signInWithEmailAndPassword(auth, values.email, values.password);
-                navigate("/")
+                await sendPasswordResetEmail(auth, values.email);
+                navigate("/signin")
                 setLoading(false)
-            } catch (error) {
+                showNotification({
+                    id: `reg-err-${Math.random()}`,
+                    autoClose: 5000,
+                    title: 'Success!',
+                    message: `Reset link sent to ${values.email}`,
+                    color: 'green',
+                    icon: <IconCheck />,
+                    loading: false,
+                });
+            } catch (error: any) {
+                if (error.code === "auth/user-not-found") {
+                    showNotification({
+                        id: `reg-err-${Math.random()}`,
+                        autoClose: 5000,
+                        title: 'Error!',
+                        message: "Email not found create new account",
+                        color: 'red',
+                        icon: <IconX />,
+                        loading: false,
+                    });
+                    navigate("/signin")
+                    return
+                }
                 showNotification({
                     id: `reg-err-${Math.random()}`,
                     autoClose: 5000,
                     title: 'Error!',
-                    message: "Error logging into account try again",
+                    message: "Error sending reset link try again",
                     color: 'red',
                     icon: <IconX />,
                     loading: false,
@@ -55,7 +65,7 @@ export const Signin = () => {
                 setLoading(false)
             }
         })}>
-            <div className='min-h-screen grid  md:grid-cols-2'>
+            <div className='min-h-screen grid md:grid-cols-2'>
                 <div
                     className='h-full'
                     style={{
@@ -67,7 +77,7 @@ export const Signin = () => {
                 ></div>
                 <div className='p-5 md:w-3/4 md:m-auto space-y-5'>
                     <Title align='center' pb={30}>
-                        Welcome Back
+                        Reset Password
                     </Title>
                     <div
                         className='space-y-3'
@@ -82,41 +92,20 @@ export const Signin = () => {
                             }}
                             {...form.getInputProps("email")}
                         />
-                        <PasswordInput
-                            placeholder="Enter at least 6+ characters"
-                            label="Password"
-                            variant='unstyled'
-                            classNames={{
-                                root: "border-solid border-b-[1px] border-black",
-                            }}
-                            {...form.getInputProps("password")}
-                        />
                         <div>
                             <Button fullWidth loading={loading} type='submit' >
-                                Login
+                                Send Reset Link
                             </Button>
-                            <div className='flex justify-end'>
-                                <Button
-                                    size='xs'
-                                    variant='white'
-                                    onClick={async () => {
-                                        navigate("/passwordreset")
-                                    }}
-                                >Forgot Password?</Button>
-                            </div>
                         </div>
                     </div>
                     <Divider label='Or' labelPosition="center" />
-                    <div className='text-center'>
-                        <GoogleButton>Continue with Google</GoogleButton>
-                    </div>
                     <div className='flex gap-2 text-xs select-none justify-center'>
-                        <Text>Don't have an account?</Text>
+                        <Text>Remember password?</Text>
                         <Text
                             color='blue'
                             className='cursor-pointer hover:scale-105 duration-100 ease-linear'
-                            onClick={() => navigate('/')}
-                        >Sign Up</Text>
+                            onClick={() => navigate('/signin')}
+                        >Log In</Text>
                     </div>
                 </div>
             </div>

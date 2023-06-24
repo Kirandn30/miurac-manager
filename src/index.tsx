@@ -61,6 +61,9 @@ root.render(
           }
         }
       }}
+      // withCSSVariables
+      withGlobalStyles
+      withNormalizeCSS
     >
       <Notifications />
       <BrowserRouter>

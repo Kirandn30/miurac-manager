@@ -46,12 +46,12 @@ export const TableHeader = ({ setOpened }: {
                             {(styles) => (
                                 <div style={styles} className='grid grid-cols-2'>
                                     <div className='self-center'>
-                                        <Button
+                                        {/* <Button
                                             leftIcon={<IconArrowNarrowUp />}
                                             variant='outline'
                                         >
                                             Export
-                                        </Button>
+                                        </Button> */}
                                     </div >
                                     <div className='flex justify-end gap-3'>
                                         <ActionIcon onClick={() => setsearchActive({ active: true, text: "" })} style={{ borderRadius: "100%", padding: "3px", border: "solid 1px #e6e6e6" }} size="xl" variant='light'>
@@ -60,7 +60,10 @@ export const TableHeader = ({ setOpened }: {
                                         <ActionIcon style={{ borderRadius: "100%", padding: "3px", border: "solid 1px #e6e6e6" }} size="xl" variant='light'>
                                             <IconFilter />
                                         </ActionIcon>
-                                        <ActionIcon style={{ borderRadius: "100%", padding: "3px", backgroundColor: "#003152FF" }} size="xl" variant='filled'>
+                                        <ActionIcon
+                                            style={{ borderRadius: "100%", padding: "3px", backgroundColor: "#003152FF" }} size="xl" variant='filled'
+                                            onClick={() => setOpened(op => ({ ...op, data: null, modal: true }))}
+                                        >
                                             <IconPlus />
                                         </ActionIcon>
                                     </div>

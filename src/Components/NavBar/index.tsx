@@ -164,19 +164,19 @@ export default function NavBar({ children }: { children: ReactNode }) {
                 <Footer height={70} p="md" hidden={matches}>
                     <div className='grid grid-cols-3 justify-items-center'>
                         <div className='grid'>
-                            <ActionIcon className='justify-self-center'>
+                            <ActionIcon className='justify-self-center' onClick={() => navigate('/')}>
                                 <IconNotes size={30} />
                             </ActionIcon>
                             <Text size="xs">Projects</Text>
                         </div>
                         <div>
-                            <ActionIcon>
+                            <ActionIcon onClick={() => navigate('/inbox')}>
                                 <IconInbox size={30} />
                             </ActionIcon>
                             <Text size="xs">Inbox</Text>
                         </div>
                         <div>
-                            <ActionIcon>
+                            <ActionIcon onClick={() => navigate('/settings')}>
                                 <IconDots size={30} />
                             </ActionIcon>
                             <Text size="xs">More</Text>
@@ -187,14 +187,14 @@ export default function NavBar({ children }: { children: ReactNode }) {
             header={
                 <Header
                     height={{ base: 80, md: 70 }}
-                    p="md" className='shadow-lg'
+                    p="md" className='shadow-sm'
                     style={{ backgroundColor: matches ? 'white' : "#003152FF" }}
                 >
                     <div className='flex justify-between'>
                         <div className='w-fit'>
-                            <div className='flex gap-x-1'>
-                                <Text className='font-bold' style={{ color: matches ? '#003152FF' : "white" }}>Project</Text>
-                                <Text className='font-bold' style={{ color: '#EF9834FF' }}>Management</Text>
+                            <div className='flex gap-x-1 text-base tracking-wide'>
+                                <Text style={{ color: matches ? '#003152FF' : "white", fontFamily: "Playfair Display, serif" }}>Project</Text>
+                                <Text style={{ color: '#EF9834FF', fontFamily: "Playfair Display, serif" }}>Management</Text>
                             </div>
                             <Text align='right' size="xs" color={matches ? '#003152FF' : "white"}>Powered by Miurac</Text>
                         </div>

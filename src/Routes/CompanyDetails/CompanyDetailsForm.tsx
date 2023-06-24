@@ -253,6 +253,7 @@ export const CompanyDetailsForm = () => {
                     <Button variant='subtle' color='red' onClick={async () => {
                         try {
                             await signOut(auth)
+                            navigate("/")
                         } catch (error) {
                             showNotification({
                                 id: `reg-err-${Math.random()}`,

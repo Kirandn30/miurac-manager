@@ -7,9 +7,9 @@ import React, { useEffect, useState } from 'react'
 import { showNotification } from '@mantine/notifications';
 import {  doc, serverTimestamp, setDoc, updateDoc } from 'firebase/firestore';
 import { db } from '../../firebaseConfig';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../../redux';
-import { ProjectDetailsType } from '../../redux/projectSlice';
+import { ProjectDetailsType, setProjectDetails } from '../../redux/projectSlice';
 import { cloneDeep } from 'lodash';
 
 const projectSchema = Yup.object().shape({
@@ -28,18 +28,19 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
         modal: boolean;
         data: ProjectDetailsType | null;
     }>>
-
 }) => {
     const [loading, setLoading] = useState(false)
     const { user } = useSelector((state: RootState) => state.user)
+    const { ProjectsDetails } = useSelector((state: RootState) => state.projectdetails)
+    const dispatch = useDispatch()
 
     useEffect(() => {
         if (!projectDetails) return
-        const data = cloneDeep(projectDetails)
-        form.setValues(data)
+        const copyData = cloneDeep(projectDetails)
+        form.setValues(copyData)
     }, [])
 
-    const form = useForm<FormType>({
+    const form = useForm<ProjectDetailsType>({
         initialValues: {
             projectName: "",
             clientCompany: "",
@@ -47,12 +48,16 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
             clientPhone: "",
             clientEmail: "",
             address: "",
+            projectId: '',
+            createdAt: '',
             city: "",
             state: "",
             country: "",
+            userId: "",
             zipCode: "",
             appStructure: [],
-            projectDescription: '',
+            projectDiscription: '',
+            status: 'New',
             deliverables: [{ deliverable: '', id: uuidv4() }],
             assumptions: '',
             businessObjectives: '',
@@ -109,7 +114,7 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                 sx={{ flex: 1 }}
                 {...form.getInputProps(`procurements.${index}.estdCost`)}
             />
-            <ActionIcon color="red" onClick={() => form.removeListItem('procurements', index)}>
+            <ActionIcon className='mt-5' color="red" onClick={() => form.removeListItem('procurements', index)}>
                 <IconTrash size="1rem" />
             </ActionIcon>
         </Group>
@@ -136,7 +141,7 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                 sx={{ flex: 1 }}
                 {...form.getInputProps(`humanResourceRequriments.${index}.contact`)}
             />
-            <ActionIcon color="red" onClick={() => form.removeListItem('humanResourceRequriments', index)}>
+            <ActionIcon color="red" className='mt-5' onClick={() => form.removeListItem('humanResourceRequriments', index)}>
                 <IconTrash size="1rem" />
             </ActionIcon>
         </Group>
@@ -156,7 +161,7 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                 sx={{ flex: 1 }}
                 {...form.getInputProps(`estimatedBudject.${index}.estdCost`)}
             />
-            <ActionIcon color="red" onClick={() => form.removeListItem('estimatedBudject', index)}>
+            <ActionIcon color="red" className='mt-5' onClick={() => form.removeListItem('estimatedBudject', index)}>
                 <IconTrash size="1rem" />
             </ActionIcon>
         </Group>
@@ -176,7 +181,7 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                 {...form.getInputProps(`estimatedSchedule.${index}.time`)}
                 label="Time"
             />
-            <ActionIcon color="red" onClick={() => form.removeListItem('estimatedSchedule', index)}>
+            <ActionIcon color="red" className='mt-5' onClick={() => form.removeListItem('estimatedSchedule', index)}>
                 <IconTrash size="1rem" />
             </ActionIcon>
         </Group>
@@ -233,9 +238,16 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                             try {
                                 if (!user) return
                                 setLoading(true)
-                                await updateDoc(doc(db, "Users", user.uid, "Projects", projectDetails.projectId), {
+                                await updateDoc(doc(db, "Projects", projectDetails.projectId), {
                                     ...val,
                                 })
+                                const updatedArray = ProjectsDetails.map((eachProject) => {
+                                    if (eachProject.projectId === projectDetails.projectId) {
+                                        return { eachProject, ...val };
+                                    }
+                                    return eachProject;
+                                });
+                                dispatch(setProjectDetails(updatedArray))
                                 setOpened(prev => ({ ...prev, data: null, modal: false }))
                             } catch (error) {
                                 showNotification({
@@ -255,12 +267,18 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                                 if (!user) return
                                 setLoading(true)
                                 const projectId = uuidv4()
-                                await setDoc(doc(db, "Users", user.uid, "Projects", projectId), {
+                                const newProjectData = {
                                     ...val,
                                     projectId,
                                     status: "New",
                                     createdAt: serverTimestamp(),
-                                })
+                                    userId: user.uid
+                                }
+                                await setDoc(doc(db, "Projects", projectId), newProjectData)
+                                const clone = cloneDeep(ProjectsDetails)
+                                const newData = [newProjectData, ...clone]
+                                newData.pop();
+                                dispatch(setProjectDetails(newData))
                                 setOpened(prev => ({ ...prev, data: null, modal: false }))
                             } catch (error) {
                                 showNotification({
@@ -365,7 +383,7 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                         </div>
                     </div>
                     <MultiSelect
-                        data={data}
+                        data={appStructureData}
                         className='my-2'
                         label="Project Type"
                         name="Project Type"
@@ -399,20 +417,23 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                     <div className='my-2 space-y-3 bg-gray-100 md:p-5 p-3 rounded-md'>
                         <Text>Deliverables</Text>
                         {deliverablesFields}
-                        <Button
-                            className='self-end'
-                            variant='outline'
-                            size='xs'
-                            onClick={() =>
-                                form.insertListItem('deliverables', { deliverable: '', id: uuidv4() })
-                            }
-                        >
-                            Add More
-                        </Button>
+                        <div className='flex justify-end'>
+                            <Button
+                                className='self-end'
+                                variant='outline'
+                                size='xs'
+                                onClick={() =>
+                                    form.insertListItem('deliverables', { deliverable: '', id: uuidv4() })
+                                }
+                            >
+                                Add More
+                            </Button>
+                        </div>
                     </div>
                     <div className='my-2 space-y-3 bg-gray-100 md:p-5 p-3 rounded-md'>
                         <Text>Estimated Schedule</Text>
                         {estimatedScheduleFields}
+                        <div className='flex justify-end'>
                         <Button
                             variant='outline'
                             size='xs'
@@ -426,10 +447,12 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                         >
                             Add More
                         </Button>
+                        </div>
                     </div>
                     <div className='my-2 space-y-3 bg-gray-100 md:p-5 p-3 rounded-md'>
                         <Text>Estimated Budget</Text>
                         {estimatedBudjectFields}
+                        <div className='flex justify-end'>
                         <Button
                             className='self-end'
                             variant='outline'
@@ -444,10 +467,12 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                         >
                             Add More
                         </Button>
+                        </div>
                     </div>
                     <div className='my-2 space-y-3 bg-gray-100 md:p-5 p-3 rounded-md'>
                         <Text>Human Resource Requirements</Text>
                         {humanResourceRequrimentsFields}
+                        <div className='flex justify-end'>
                         <Button
                             className='self-end'
                             variant='outline'
@@ -463,10 +488,12 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                         >
                             Add More
                         </Button>
+                        </div>
                     </div>
                     <div className='my-2 space-y-3 bg-gray-100 md:p-5 p-3 rounded-md'>
                         <Text>Procurements</Text>
                         {procurementsFields}
+                        <div className='flex justify-end'>
                         <Button
                             className='self-end'
                             variant='outline'
@@ -482,6 +509,7 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                         >
                             Add More
                         </Button>
+                        </div>
                     </div>
                     <Textarea
                         className='my-2'
@@ -549,7 +577,7 @@ export const ProjectForm = ({ projectDetails, setOpened }: {
                     <div
                         className='flex justify-center'
                     >
-                        <Button loading={loading} type='submit'>{projectDetails ? "Update" : "Submit"}</Button>
+                        <Button loading={loading} type='submit'>{projectDetails ? "Update" : "Save"}</Button>
                     </div>
                 </form>
             </div>
@@ -612,7 +640,7 @@ interface ProcurementsType {
     id: string
 }
 
-const data = [
+const appStructureData = [
     {
         label: "Super Admin",
         value: "superAdmin"

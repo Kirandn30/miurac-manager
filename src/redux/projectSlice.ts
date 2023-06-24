@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { Timestamp } from 'firebase/firestore';
+import { FieldValue, Timestamp } from 'firebase/firestore';
 
 
 export interface ProjectDetailsState {
@@ -52,12 +52,16 @@ export interface ProjectDetailsType {
     zipCode: string
     clientCompany: string
     city: string
-    createdAt: Timestamp
+    createdAt: TimestampOrFieldValue
     status: string,
     latestUpdate: { update: string, id: string }[],
     remarks: { remark: string, id: string }[],
+    projectDocuments?: ProjectDocumentsType[],
+    userId: string,
 }
+type TimestampOrFieldValue = "" | Timestamp | FieldValue;
 
+export interface ProjectDocumentsType { id: string, url: string, type: string, size: number, name: string, path: string }
 export interface EstimatedBudject {
     id: string
     resourceDiscription: string
