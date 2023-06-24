@@ -89,7 +89,7 @@ function App() {
               path="/"
               element={
                 <InstantSearch searchClient={searchClient} indexName="projects">
-                  <Configure hitsPerPage={10} />
+                  <Configure hitsPerPage={10} filters={`userId:${user.uid}`} />
                   <Home />
                 </InstantSearch>
               }

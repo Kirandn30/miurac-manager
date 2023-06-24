@@ -79,7 +79,7 @@ export const ProjectTableData = ({
         (async () => {
             if (!user) return
             const docRef = collection(db, "Projects");
-            const q = query(docRef, where("status", "in", statuses))
+            const q = query(docRef, where("status", "in", statuses), where("userId", "==", user.uid))
             const snapshot = await getCountFromServer(q);
             setTotalDocs(snapshot.data().count);
             onPageChange(pageNumber);

@@ -50,9 +50,9 @@ root.render(
         //   ],
         // },
 
-        // // primaryColor: 'primary',
-        // fontFamily: 'Poppins',
-        // defaultRadius: 8,
+        // primaryColor: 'primary',
+        fontFamily: 'Poppins',
+        defaultRadius: 8,
         components: {
           Modal: {
             defaultProps: {
